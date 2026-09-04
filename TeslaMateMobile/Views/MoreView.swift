@@ -7,29 +7,64 @@ struct MoreView: View {
     @State private var settings = false
 
     var body: some View {
-        List {
-            Section("地点与围栏") {
-                NavigationLink { GeofencesMapView(geofences: session.geofences) } label: { Label("围栏地图", systemImage: "map.fill") }
-                ForEach(session.geofences) { place in
-                    Label { LabeledContent(place.name, value: "\(place.radius) m") } icon: { Image(systemName: "mappin.circle.fill").foregroundStyle(.primary) }
-                }
-            }
-            Section("完整中文仪表盘") {
-                NavigationLink { GrafanaView(url: grafanaURL) } label: { Label("浏览全部 Grafana 仪表盘", systemImage: "chart.xyaxis.line") }
-                Text("驾驶、充电、效率、电池健康、费用、停车和更新等全部现有仪表盘。").font(.caption).foregroundStyle(.secondary)
-            }
-            Section("连接与同步") {
-                Button { settings = true } label: { Label("服务器设置", systemImage: "gearshape") }
-                LabeledContent("自动刷新", value: "每 60 秒")
-                LabeledContent("服务器", value: session.serverURL)
-            }
-            if let error = session.errorMessage { Section("最近错误") { Label(error, systemImage: "exclamationmark.triangle") } }
+        ZStack {
+            TMStyle.background.ignoresSafeArea()
+            ScrollView {
+                VStack(spacing: 18) {
+                    HStack(spacing: 14) {
+                        Image(systemName: session.errorMessage == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill").font(.title2)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(session.errorMessage == nil ? "服务器已连接" : "连接需要检查").font(.headline)
+                            Text(syncDescription).font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if session.isLoading { ProgressView().tint(.white) }
+                    }.tmCard()
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        TMSectionTitle("数据与地点")
+                        NavigationLink { GeofencesMapView(geofences: session.geofences) } label: { MenuRow(icon: "map.fill", title: "地理围栏", subtitle: "\(session.geofences.count) 个已保存地点") }
+                        Divider().overlay(.white.opacity(0.1))
+                        NavigationLink { GrafanaView(url: grafanaURL) } label: { MenuRow(icon: "chart.xyaxis.line", title: "完整中文仪表盘", subtitle: "驾驶、充电、效率、电池与费用") }
+                    }.buttonStyle(.plain).tmCard()
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        TMSectionTitle("连接与应用")
+                        Button { settings = true } label: { MenuRow(icon: "server.rack", title: "服务器设置", subtitle: displayServer) }
+                        Divider().overlay(.white.opacity(0.1))
+                        MenuRow(icon: "arrow.clockwise", title: "自动同步", subtitle: "每 60 秒")
+                        Divider().overlay(.white.opacity(0.1))
+                        MenuRow(icon: "info.circle", title: "TeslaMate iOS", subtitle: "版本 0.8.0 · 黑白专业版")
+                    }.buttonStyle(.plain).tmCard()
+
+                    if let error = session.errorMessage {
+                        VStack(alignment: .leading, spacing: 8) { Label("最近错误", systemImage: "exclamationmark.triangle").font(.headline); Text(error).font(.subheadline).foregroundStyle(.secondary) }.frame(maxWidth: .infinity, alignment: .leading).tmCard()
+                    }
+                }.padding(.horizontal, 18).padding(.bottom, 30)
+            }.refreshable { await session.refresh() }
         }
         .navigationTitle("更多")
         .sheet(isPresented: $settings) { ConnectionView() }
     }
 
     private var grafanaURL: URL { URL(string: session.serverURL.replacingOccurrences(of: ":4000/", with: ":3000/"))! }
+    private var displayServer: String { URL(string: session.serverURL)?.host ?? session.serverURL }
+    private var syncDescription: String {
+        if let error = session.errorMessage { return error }
+        if let date = session.lastUpdated { return "上次同步 " + date.formatted(date: .omitted, time: .shortened) }
+        return "等待首次同步"
+    }
+}
+
+private struct MenuRow: View {
+    let icon, title, subtitle: String
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: icon).font(.title3).frame(width: 32)
+            VStack(alignment: .leading, spacing: 3) { Text(title).font(.subheadline.weight(.semibold)); Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
+            Spacer(); Image(systemName: "chevron.right").font(.caption.bold()).foregroundStyle(.tertiary)
+        }.contentShape(Rectangle())
+    }
 }
 
 private struct GeofencesMapView: View {

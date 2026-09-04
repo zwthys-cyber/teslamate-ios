@@ -3,6 +3,12 @@ import SwiftUI
 
 struct ChargingView: View {
     @Environment(AppSession.self) private var session
+    @State private var searchText = ""
+
+    private var filteredSessions: [ChargingSession] {
+        guard !searchText.isEmpty else { return session.chargingSessions }
+        return session.chargingSessions.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
     var body: some View {
         ZStack {
             TMStyle.background.ignoresSafeArea()
@@ -12,14 +18,15 @@ struct ChargingView: View {
                         VStack(alignment: .leading, spacing: 3) { Text("充电历史").font(.title2.bold()); Text("累计 \(String(format: "%.1f", session.statistics.charging.energyKwh)) kWh · \(session.statistics.charging.count) 次").font(.subheadline).foregroundStyle(.secondary) }
                         Spacer(); Image(systemName: "bolt.fill").font(.title2)
                     }.tmCard()
-                    ForEach(session.chargingSessions) { item in
+                    ForEach(filteredSessions) { item in
                         NavigationLink { ChargingDetailView(item: item) } label: { ChargeCard(item: item) }.buttonStyle(.plain)
                     }
-                    if session.chargingSessions.isEmpty { ContentUnavailableView("暂无充电记录", systemImage: "bolt.car", description: Text("完成一次充电后会自动出现在这里")).padding(.top, 80) }
+                    if filteredSessions.isEmpty { ContentUnavailableView(searchText.isEmpty ? "暂无充电记录" : "没有匹配记录", systemImage: "bolt.car", description: Text(searchText.isEmpty ? "完成一次充电后会自动出现在这里" : "尝试搜索其他地点")).padding(.top, 80) }
                 }.padding(.horizontal, 18).padding(.bottom, 30)
             }
         }
         .navigationTitle("充电")
+        .searchable(text: $searchText, prompt: "搜索充电地点")
         .refreshable { await session.refresh() }
     }
 }

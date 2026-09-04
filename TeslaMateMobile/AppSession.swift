@@ -13,6 +13,7 @@ final class AppSession {
     var geofences: [Geofence] = []
     var isLoading = false
     var errorMessage: String?
+    var lastUpdated: Date?
 
     var isConfigured: Bool { !serverURL.isEmpty && !token.isEmpty }
     var selectedVehicle: Vehicle? { vehicles.first(where: { $0.id == selectedVehicleID }) ?? vehicles.first }
@@ -43,6 +44,7 @@ final class AppSession {
                 async let newGeofences = client.geofences()
                 (drives, chargingSessions, statistics, geofences) = try await (newDrives, newCharging, newStatistics, newGeofences)
             }
+            lastUpdated = Date()
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -65,6 +67,7 @@ final class AppSession {
             async let newStatistics = client.statistics(carID: carID)
             async let newGeofences = client.geofences()
             (drives, chargingSessions, statistics, geofences) = try await (newDrives, newCharging, newStatistics, newGeofences)
+            lastUpdated = Date()
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
     }

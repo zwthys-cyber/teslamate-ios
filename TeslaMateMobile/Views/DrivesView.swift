@@ -3,6 +3,12 @@ import SwiftUI
 
 struct DrivesView: View {
     @Environment(AppSession.self) private var session
+    @State private var searchText = ""
+
+    private var filteredDrives: [Drive] {
+        guard !searchText.isEmpty else { return session.drives }
+        return session.drives.filter { $0.startName.localizedCaseInsensitiveContains(searchText) || $0.endName.localizedCaseInsensitiveContains(searchText) }
+    }
     var body: some View {
         ZStack {
             TMStyle.background.ignoresSafeArea()
@@ -12,14 +18,15 @@ struct DrivesView: View {
                         VStack(alignment: .leading, spacing: 3) { Text("最近行程").font(.title2.bold()); Text("共 \(session.statistics.driving.count) 次 · \(String(format: "%.0f", session.statistics.driving.distanceKm)) km").font(.subheadline).foregroundStyle(.secondary) }
                         Spacer(); Image(systemName: "road.lanes").font(.title2)
                     }.tmCard()
-                    ForEach(session.drives) { drive in
+                    ForEach(filteredDrives) { drive in
                         NavigationLink { DriveDetailView(drive: drive) } label: { DriveCard(drive: drive) }.buttonStyle(.plain)
                     }
-                    if session.drives.isEmpty { ContentUnavailableView("暂无行程", systemImage: "road.lanes", description: Text("完成一次驾驶后会自动出现在这里")) .padding(.top, 80) }
+                    if filteredDrives.isEmpty { ContentUnavailableView(searchText.isEmpty ? "暂无行程" : "没有匹配行程", systemImage: "road.lanes", description: Text(searchText.isEmpty ? "完成一次驾驶后会自动出现在这里" : "尝试搜索其他地点")) .padding(.top, 80) }
                 }.padding(.horizontal, 18).padding(.bottom, 30)
             }
         }
         .navigationTitle("行程")
+        .searchable(text: $searchText, prompt: "搜索出发地或目的地")
         .refreshable { await session.refresh() }
     }
 }
