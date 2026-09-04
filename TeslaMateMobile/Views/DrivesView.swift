@@ -4,23 +4,42 @@ import SwiftUI
 struct DrivesView: View {
     @Environment(AppSession.self) private var session
     var body: some View {
-        List(session.drives) { drive in
-            NavigationLink { DriveDetailView(drive: drive) } label: {
-                VStack(alignment: .leading, spacing: 7) {
-                    HStack { Text(drive.startName).lineLimit(1); Image(systemName: "arrow.right"); Text(drive.endName).lineLimit(1) }
-                        .font(.headline)
+        ZStack {
+            TMStyle.background.ignoresSafeArea()
+            ScrollView {
+                LazyVStack(spacing: 14) {
                     HStack {
-                        Label(String(format: "%.1f km", drive.distanceKm ?? 0), systemImage: "road.lanes")
-                        Spacer()
-                        Label("\(drive.durationMin ?? 0) 分钟", systemImage: "clock")
-                    }.font(.subheadline).foregroundStyle(.secondary)
-                    Text(DateText.format(drive.startDate)).font(.caption).foregroundStyle(.tertiary)
-                }.padding(.vertical, 5)
+                        VStack(alignment: .leading, spacing: 3) { Text("最近行程").font(.title2.bold()); Text("共 \(session.statistics.driving.count) 次 · \(String(format: "%.0f", session.statistics.driving.distanceKm)) km").font(.subheadline).foregroundStyle(.secondary) }
+                        Spacer(); Image(systemName: "road.lanes").font(.title2)
+                    }.tmCard()
+                    ForEach(session.drives) { drive in
+                        NavigationLink { DriveDetailView(drive: drive) } label: { DriveCard(drive: drive) }.buttonStyle(.plain)
+                    }
+                    if session.drives.isEmpty { ContentUnavailableView("暂无行程", systemImage: "road.lanes", description: Text("完成一次驾驶后会自动出现在这里")) .padding(.top, 80) }
+                }.padding(.horizontal, 18).padding(.bottom, 30)
             }
         }
         .navigationTitle("行程")
         .refreshable { await session.refresh() }
-        .overlay { if session.drives.isEmpty { ContentUnavailableView("暂无行程", systemImage: "road.lanes") } }
+    }
+}
+
+private struct DriveCard: View {
+    let drive: Drive
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top) {
+                Text(DateText.format(drive.startDate)).font(.caption).foregroundStyle(.secondary)
+                Spacer(); Text(String(format: "%.1f km", drive.distanceKm ?? 0)).font(.title3.bold().monospacedDigit())
+            }
+            HStack(spacing: 12) {
+                VStack(spacing: 3) { Circle().fill(.white).frame(width: 7, height: 7); Rectangle().fill(.white.opacity(0.25)).frame(width: 1, height: 24); Circle().stroke(.white, lineWidth: 1.5).frame(width: 7, height: 7) }
+                VStack(alignment: .leading, spacing: 15) { Text(drive.startName).lineLimit(1); Text(drive.endName).lineLimit(1) }
+                Spacer()
+            }.font(.subheadline.weight(.medium))
+            HStack { Label("\(drive.durationMin ?? 0) 分钟", systemImage: "clock"); Spacer(); Label("最高 \(drive.speedMax ?? 0) km/h", systemImage: "speedometer") }
+                .font(.caption).foregroundStyle(.secondary)
+        }.tmCard()
     }
 }
 

@@ -4,18 +4,40 @@ import SwiftUI
 struct ChargingView: View {
     @Environment(AppSession.self) private var session
     var body: some View {
-        List(session.chargingSessions) { item in
-            NavigationLink { ChargingDetailView(item: item) } label: {
-                VStack(alignment: .leading, spacing: 7) {
-                    HStack { Label(item.name, systemImage: "bolt.fill").font(.headline); Spacer(); Text(String(format: "%.1f kWh", item.energyAddedKwh ?? 0)).bold() }
-                    HStack { Text("\(item.startBatteryLevel ?? 0)% → \(item.endBatteryLevel ?? 0)%"); Spacer(); Text("\(item.durationMin ?? 0) 分钟"); if let cost = item.cost { Spacer(); Text(String(format: "¥%.2f", cost)) } }.font(.subheadline).foregroundStyle(.secondary)
-                    Text(DateText.format(item.startDate)).font(.caption).foregroundStyle(.tertiary)
-                }.padding(.vertical, 5)
+        ZStack {
+            TMStyle.background.ignoresSafeArea()
+            ScrollView {
+                LazyVStack(spacing: 14) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 3) { Text("充电历史").font(.title2.bold()); Text("累计 \(String(format: "%.1f", session.statistics.charging.energyKwh)) kWh · \(session.statistics.charging.count) 次").font(.subheadline).foregroundStyle(.secondary) }
+                        Spacer(); Image(systemName: "bolt.fill").font(.title2)
+                    }.tmCard()
+                    ForEach(session.chargingSessions) { item in
+                        NavigationLink { ChargingDetailView(item: item) } label: { ChargeCard(item: item) }.buttonStyle(.plain)
+                    }
+                    if session.chargingSessions.isEmpty { ContentUnavailableView("暂无充电记录", systemImage: "bolt.car", description: Text("完成一次充电后会自动出现在这里")).padding(.top, 80) }
+                }.padding(.horizontal, 18).padding(.bottom, 30)
             }
         }
         .navigationTitle("充电")
         .refreshable { await session.refresh() }
-        .overlay { if session.chargingSessions.isEmpty { ContentUnavailableView("暂无充电记录", systemImage: "bolt.car") } }
+    }
+}
+
+private struct ChargeCard: View {
+    let item: ChargingSession
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack { Label(item.name, systemImage: "mappin.and.ellipse").font(.headline).lineLimit(1); Spacer(); Image(systemName: "chevron.right").font(.caption.bold()).foregroundStyle(.tertiary) }
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(String(format: "%.1f", item.energyAddedKwh ?? 0)).font(.system(.largeTitle, design: .rounded, weight: .bold)).monospacedDigit()
+                Text("kWh").foregroundStyle(.secondary); Spacer()
+                Text("\(item.startBatteryLevel ?? 0)%").foregroundStyle(.secondary); Image(systemName: "arrow.right").font(.caption); Text("\(item.endBatteryLevel ?? 0)%").font(.headline)
+            }
+            HStack { Label("\(item.durationMin ?? 0) 分钟", systemImage: "clock"); Spacer(); if let cost = item.cost { Label(String(format: "¥%.2f", cost), systemImage: "yensign.circle") } }
+                .font(.caption).foregroundStyle(.secondary)
+            Text(DateText.format(item.startDate)).font(.caption2).foregroundStyle(.tertiary)
+        }.tmCard()
     }
 }
 
