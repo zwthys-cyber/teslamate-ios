@@ -8,9 +8,24 @@ struct InsightsView: View {
         ZStack {
             TMStyle.background.ignoresSafeArea()
             ScrollView {
-                VStack(spacing: 18) {
-                    HStack(spacing: 12) { StatCard(title: "总里程", value: String(format: "%.0f km", session.statistics.driving.distanceKm), icon: "road.lanes"); StatCard(title: "驾驶时间", value: duration, icon: "clock") }
-                    HStack(spacing: 12) { StatCard(title: "充电量", value: String(format: "%.1f kWh", session.statistics.charging.energyKwh), icon: "bolt.fill"); StatCard(title: "充电费用", value: String(format: "¥%.2f", session.statistics.charging.cost), icon: "yensign.circle") }
+                VStack(spacing: 24) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(String(format: "%.0f", session.statistics.driving.distanceKm)).font(.system(size: 48, weight: .semibold, design: .rounded)).tracking(-1.8).monospacedDigit()
+                        Text("累计驾驶公里").font(.subheadline).foregroundStyle(.secondary)
+                    }.frame(maxWidth: .infinity, alignment: .leading)
+                    VStack(spacing: 0) {
+                        HStack(spacing: 0) {
+                            InsightMetric(title: "驾驶时间", value: duration)
+                            Divider().frame(height: 44)
+                            InsightMetric(title: "充电量", value: String(format: "%.1f kWh", session.statistics.charging.energyKwh))
+                        }.padding(.vertical, 16)
+                        Divider().overlay(.white.opacity(0.1))
+                        HStack(spacing: 0) {
+                            InsightMetric(title: "充电费用", value: String(format: "¥%.2f", session.statistics.charging.cost))
+                            Divider().frame(height: 44)
+                            InsightMetric(title: "续航消耗比", value: rangeConsumptionRatio)
+                        }.padding(.vertical, 16)
+                    }.padding(.horizontal, 10).background(TMStyle.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous)).overlay { RoundedRectangle(cornerRadius: 16).stroke(TMStyle.border, lineWidth: 0.5) }
                     Picker("统计类型", selection: $mode) { ForEach(InsightMode.allCases) { Text($0.title).tag($0) } }.pickerStyle(.segmented)
                     VStack(alignment: .leading, spacing: 18) {
                         TMSectionTitle(chartTitle, detail: "近 12 个月")
@@ -29,14 +44,14 @@ struct InsightsView: View {
                             }
                         }
                     }.chartXAxis { AxisMarks(values: .automatic(desiredCount: 4)) { _ in AxisGridLine().foregroundStyle(.white.opacity(0.08)); AxisValueLabel().foregroundStyle(.secondary) } }.frame(height: 280).tmCard()
-                    HStack(spacing: 12) {
-                        StatCard(title: "平均每次行程", value: averageDrive, icon: "point.topleft.down.to.point.bottomright.curvepath")
-                        StatCard(title: "平均每次充电", value: averageCharge, icon: "bolt.badge.clock")
-                    }
-                    HStack(spacing: 12) {
-                        StatCard(title: "平均充电单价", value: averageUnitCost, icon: "banknote")
-                        StatCard(title: "续航消耗比", value: rangeConsumptionRatio, icon: "gauge.with.dots.needle.50percent")
-                    }
+                    VStack(alignment: .leading, spacing: 0) {
+                        TMSectionTitle("平均指标")
+                        InsightLine(title: "每次行程", value: averageDrive, icon: "road.lanes").padding(.top, 8)
+                        Divider().overlay(.white.opacity(0.1))
+                        InsightLine(title: "每次充电", value: averageCharge, icon: "bolt")
+                        Divider().overlay(.white.opacity(0.1))
+                        InsightLine(title: "充电单价", value: averageUnitCost, icon: "banknote")
+                    }.tmCard()
                     VStack(alignment: .leading, spacing: 18) {
                         TMSectionTitle("续航消耗比趋势", detail: "1.0 表示表显续航与实际里程相同")
                         if rangeRatioDrives.isEmpty {
@@ -64,13 +79,7 @@ struct InsightsView: View {
                             .chartXAxis(.hidden).frame(height: 180)
                         }
                     }.tmCard()
-                    VStack(alignment: .leading, spacing: 18) {
-                        TMSectionTitle("最近行程", detail: "最近 14 次")
-                        Chart(Array(session.drives.prefix(14).reversed())) { drive in BarMark(x: .value("日期", DateText.format(drive.startDate)), y: .value("里程", drive.distanceKm ?? 0)).foregroundStyle(.white) }
-                            .chartXAxis(.hidden).frame(height: 180)
-                    }.tmCard()
-                    HStack { SummaryLine(icon: "car.fill", title: "行程次数", value: "\(session.statistics.driving.count)"); Divider(); SummaryLine(icon: "bolt.fill", title: "充电次数", value: "\(session.statistics.charging.count)") }.tmCard()
-                }.padding(.horizontal, 18).padding(.bottom, 30)
+                }.padding(.horizontal, 20).padding(.bottom, 36)
             }.refreshable { await session.refresh() }
         }.navigationTitle("统计")
     }
@@ -100,12 +109,12 @@ private enum InsightMode: String, CaseIterable, Identifiable {
     var title: String { switch self { case .driving: "驾驶"; case .charging: "充电"; case .cost: "费用" } }
 }
 
-private struct StatCard: View {
-    let title, value, icon: String
-    var body: some View { VStack(alignment: .leading, spacing: 14) { Image(systemName: icon).font(.title3); Text(title).font(.caption).foregroundStyle(.secondary); Text(value).font(.title3.bold().monospacedDigit()) }.frame(maxWidth: .infinity, minHeight: 105, alignment: .leading).tmCard() }
+private struct InsightMetric: View {
+    let title, value: String
+    var body: some View { VStack(spacing: 6) { Text(value).font(.headline.monospacedDigit()).minimumScaleFactor(0.75); Text(title).font(.caption).foregroundStyle(.secondary) }.frame(maxWidth: .infinity) }
 }
 
-private struct SummaryLine: View {
-    let icon, title, value: String
-    var body: some View { VStack(spacing: 8) { Image(systemName: icon); Text(value).font(.title2.bold().monospacedDigit()); Text(title).font(.caption).foregroundStyle(.secondary) }.frame(maxWidth: .infinity) }
+private struct InsightLine: View {
+    let title, value, icon: String
+    var body: some View { HStack(spacing: 13) { Image(systemName: icon).foregroundStyle(.secondary).frame(width: 24); Text(title).font(.subheadline); Spacer(); Text(value).font(.subheadline.weight(.semibold).monospacedDigit()) }.padding(.vertical, 14) }
 }

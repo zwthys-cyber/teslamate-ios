@@ -10,19 +10,20 @@ struct MoreView: View {
         ZStack {
             TMStyle.background.ignoresSafeArea()
             ScrollView {
-                VStack(spacing: 18) {
+                VStack(alignment: .leading, spacing: 24) {
                     HStack(spacing: 14) {
-                        Image(systemName: session.errorMessage == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill").font(.title2)
+                        Circle().fill(session.errorMessage == nil ? .white : .secondary).frame(width: 8, height: 8)
                         VStack(alignment: .leading, spacing: 3) {
                             Text(session.errorMessage == nil ? "服务器已连接" : "连接需要检查").font(.headline)
                             Text(syncDescription).font(.caption).foregroundStyle(.secondary)
                         }
                         Spacer()
                         if session.isLoading { ProgressView().tint(.white) }
-                    }.tmCard()
+                    }.padding(.horizontal, 2)
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        TMSectionTitle("数据与地点")
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("数据").font(.caption.weight(.semibold)).foregroundStyle(.secondary).textCase(.uppercase).padding(.leading, 2)
+                        VStack(alignment: .leading, spacing: 0) {
                         NavigationLink { TimelineView() } label: { MenuRow(icon: "clock.arrow.circlepath", title: "车辆时间轴", subtitle: "行程、充电与软件更新") }
                         Divider().overlay(.white.opacity(0.1))
                         NavigationLink { BatteryHealthView(samples: session.batteryHealth) } label: { MenuRow(icon: "battery.75percent", title: "电池健康", subtitle: "满电等效续航与长期趋势") }
@@ -32,21 +33,24 @@ struct MoreView: View {
                         NavigationLink { SoftwareUpdatesView(updates: session.updates) } label: { MenuRow(icon: "gearshape.2", title: "软件更新历史", subtitle: "\(session.updates.count) 条车辆固件记录") }
                         Divider().overlay(.white.opacity(0.1))
                         NavigationLink { GrafanaView(url: grafanaURL) } label: { MenuRow(icon: "chart.xyaxis.line", title: "完整中文仪表盘", subtitle: "驾驶、充电、效率、电池与费用") }
-                    }.buttonStyle(.plain).tmCard()
+                        }.padding(.horizontal, 16).background(TMStyle.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous)).overlay { RoundedRectangle(cornerRadius: 16).stroke(TMStyle.border, lineWidth: 0.5) }
+                    }.buttonStyle(.plain)
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        TMSectionTitle("连接与应用")
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("系统").font(.caption.weight(.semibold)).foregroundStyle(.secondary).textCase(.uppercase).padding(.leading, 2)
+                        VStack(alignment: .leading, spacing: 0) {
                         Button { settings = true } label: { MenuRow(icon: "server.rack", title: "服务器设置", subtitle: displayServer) }
                         Divider().overlay(.white.opacity(0.1))
                         MenuRow(icon: "arrow.clockwise", title: "自动同步", subtitle: "每 60 秒")
                         Divider().overlay(.white.opacity(0.1))
-                        MenuRow(icon: "info.circle", title: "TeslaMate iOS", subtitle: "版本 2.1.0 · 黑白专业版")
-                    }.buttonStyle(.plain).tmCard()
+                        MenuRow(icon: "info.circle", title: "TeslaMate iOS", subtitle: "版本 2.2.0 · 黑白专业版")
+                        }.padding(.horizontal, 16).background(TMStyle.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous)).overlay { RoundedRectangle(cornerRadius: 16).stroke(TMStyle.border, lineWidth: 0.5) }
+                    }.buttonStyle(.plain)
 
                     if let error = session.errorMessage {
                         VStack(alignment: .leading, spacing: 8) { Label("最近错误", systemImage: "exclamationmark.triangle").font(.headline); Text(error).font(.subheadline).foregroundStyle(.secondary) }.frame(maxWidth: .infinity, alignment: .leading).tmCard()
                     }
-                }.padding(.horizontal, 18).padding(.bottom, 30)
+                }.padding(.horizontal, 20).padding(.bottom, 36)
             }.refreshable { await session.refresh() }
         }
         .navigationTitle("更多")
@@ -93,7 +97,7 @@ private struct MenuRow: View {
             Image(systemName: icon).font(.title3).frame(width: 32)
             VStack(alignment: .leading, spacing: 3) { Text(title).font(.subheadline.weight(.semibold)); Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
             Spacer(); Image(systemName: "chevron.right").font(.caption.bold()).foregroundStyle(.tertiary)
-        }.contentShape(Rectangle())
+        }.padding(.vertical, 14).contentShape(Rectangle())
     }
 }
 
