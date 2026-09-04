@@ -5,7 +5,7 @@ struct VehicleEnvelope: Decodable {
     let generatedAt: String
 }
 
-struct Vehicle: Decodable, Identifiable, Hashable {
+struct Vehicle: Codable, Identifiable, Hashable {
     let id: Int
     let name: String
     let vinSuffix: String

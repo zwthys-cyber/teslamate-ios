@@ -23,6 +23,18 @@ struct RootView: View {
                 ContentUnavailableView("暂时没有车辆数据", systemImage: "car.side", description: Text(session.errorMessage ?? "请检查 Tailscale 和服务器设置"))
             }
         }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if session.isShowingCachedData {
+                HStack(spacing: 10) {
+                    Image(systemName: "wifi.slash")
+                    Text("正在显示缓存数据").font(.caption.weight(.semibold))
+                    Spacer()
+                    Button("重试") { Task { await session.refresh() } }.font(.caption.bold())
+                }
+                .padding(.horizontal, 16).padding(.vertical, 9)
+                .background(.black.opacity(0.94)).overlay(alignment: .bottom) { Divider().overlay(.white.opacity(0.15)) }
+            }
+        }
         .task {
             await session.refresh()
             while !Task.isCancelled {

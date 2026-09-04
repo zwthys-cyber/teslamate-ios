@@ -5,7 +5,7 @@ struct ChargingEnvelope: Decodable { let data: [ChargingSession] }
 struct StatisticsEnvelope: Decodable { let data: Statistics }
 struct GeofenceEnvelope: Decodable { let data: [Geofence] }
 
-struct Drive: Decodable, Identifiable, Hashable {
+struct Drive: Codable, Identifiable, Hashable {
     let id: Int
     let startDate, endDate: String?
     let durationMin: Int?
@@ -27,7 +27,7 @@ struct DrivePosition: Decodable, Hashable {
     let date: String
 }
 
-struct ChargingSession: Decodable, Identifiable, Hashable {
+struct ChargingSession: Codable, Identifiable, Hashable {
     let id: Int
     let startDate, endDate: String?
     let durationMin: Int?
@@ -50,7 +50,7 @@ struct ChargingSample: Decodable, Identifiable {
     let energyAddedKwh, outsideTemp: Double?
 }
 
-struct Statistics: Decodable {
+struct Statistics: Codable {
     let driving: DrivingStatistics
     let charging: ChargingStatistics
     let monthlyDriving: [MonthlyDriving]
@@ -58,12 +58,12 @@ struct Statistics: Decodable {
     static let empty = Statistics(driving: .init(count: 0, distanceKm: 0, durationMin: 0), charging: .init(count: 0, energyKwh: 0, cost: 0), monthlyDriving: [], monthlyCharging: [])
 }
 
-struct DrivingStatistics: Decodable { let count: Int; let distanceKm: Double; let durationMin: Int }
-struct ChargingStatistics: Decodable { let count: Int; let energyKwh: Double; let cost: Double }
-struct MonthlyDriving: Decodable, Identifiable { var id: String { month }; let month: String; let count: Int; let distanceKm: Double; let durationMin: Int }
-struct MonthlyCharging: Decodable, Identifiable { var id: String { month }; let month: String; let count: Int; let energyKwh: Double; let cost: Double }
+struct DrivingStatistics: Codable { let count: Int; let distanceKm: Double; let durationMin: Int }
+struct ChargingStatistics: Codable { let count: Int; let energyKwh: Double; let cost: Double }
+struct MonthlyDriving: Codable, Identifiable { var id: String { month }; let month: String; let count: Int; let distanceKm: Double; let durationMin: Int }
+struct MonthlyCharging: Codable, Identifiable { var id: String { month }; let month: String; let count: Int; let energyKwh: Double; let cost: Double }
 
-struct Geofence: Decodable, Identifiable, Hashable {
+struct Geofence: Codable, Identifiable, Hashable {
     let id: Int
     let name: String
     let latitude, longitude: Double

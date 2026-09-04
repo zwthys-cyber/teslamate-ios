@@ -17,6 +17,17 @@ final class AppSession {
 
     var isConfigured: Bool { !serverURL.isEmpty && !token.isEmpty }
     var selectedVehicle: Vehicle? { vehicles.first(where: { $0.id == selectedVehicleID }) ?? vehicles.first }
+    var isShowingCachedData: Bool { errorMessage != nil && !vehicles.isEmpty }
+
+    init() {
+        guard let cache = CacheStore.load() else { return }
+        vehicles = cache.vehicles
+        drives = cache.drives
+        chargingSessions = cache.chargingSessions
+        statistics = cache.statistics
+        geofences = cache.geofences
+        lastUpdated = cache.lastUpdated
+    }
 
     func save(serverURL: String, token: String) {
         var normalized = serverURL.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -46,6 +57,7 @@ final class AppSession {
             }
             lastUpdated = Date()
             errorMessage = nil
+            persistCache()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -69,6 +81,12 @@ final class AppSession {
             (drives, chargingSessions, statistics, geofences) = try await (newDrives, newCharging, newStatistics, newGeofences)
             lastUpdated = Date()
             errorMessage = nil
+            persistCache()
         } catch { errorMessage = error.localizedDescription }
+    }
+
+    private func persistCache() {
+        guard let lastUpdated else { return }
+        CacheStore.save(.init(vehicles: vehicles, drives: drives, chargingSessions: chargingSessions, statistics: statistics, geofences: geofences, lastUpdated: lastUpdated))
     }
 }
