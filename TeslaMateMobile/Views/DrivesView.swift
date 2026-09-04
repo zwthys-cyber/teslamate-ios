@@ -1,3 +1,4 @@
+import MapKit
 import SwiftUI
 
 struct DrivesView: View {
@@ -24,9 +25,22 @@ struct DrivesView: View {
 }
 
 private struct DriveDetailView: View {
+    @Environment(AppSession.self) private var session
     let drive: Drive
+    @State private var positions: [DrivePosition] = []
+    @State private var loading = true
     var body: some View {
         List {
+            if !positions.isEmpty {
+                Map {
+                    MapPolyline(coordinates: positions.map { .init(latitude: $0.latitude, longitude: $0.longitude) })
+                        .stroke(.red, lineWidth: 5)
+                    if let first = positions.first { Marker("出发", coordinate: .init(latitude: first.latitude, longitude: first.longitude)).tint(.green) }
+                    if let last = positions.last { Marker("到达", coordinate: .init(latitude: last.latitude, longitude: last.longitude)).tint(.red) }
+                }
+                .frame(height: 280)
+                .listRowInsets(.init())
+            } else if loading { ProgressView("正在载入轨迹…") }
             Section("路线") { LabeledContent("出发", value: drive.startName); LabeledContent("到达", value: drive.endName) }
             Section("驾驶数据") {
                 LabeledContent("距离", value: String(format: "%.2f km", drive.distanceKm ?? 0))
@@ -36,7 +50,11 @@ private struct DriveDetailView: View {
                 LabeledContent("平均外温", value: String(format: "%.1f ℃", drive.outsideTempAvg ?? 0))
             }
             Section("续航变化") { LabeledContent("开始", value: String(format: "%.1f km", drive.startRangeKm ?? 0)); LabeledContent("结束", value: String(format: "%.1f km", drive.endRangeKm ?? 0)) }
-        }.navigationTitle("行程详情")
+        }.navigationTitle("行程详情").task {
+            do { positions = try await APIClient(serverURL: session.serverURL, token: session.token).drive(id: drive.id).positions }
+            catch { session.errorMessage = error.localizedDescription }
+            loading = false
+        }
     }
 }
 

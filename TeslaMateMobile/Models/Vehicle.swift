@@ -36,4 +36,16 @@ struct Vehicle: Decodable, Identifiable, Hashable {
     let model: String?
     let trimBadging: String?
     let exteriorColor: String?
+    let windowsOpen, doorsOpen: Bool?
+    let trunkOpen, frunkOpen: Bool?
+    let chargePortDoorOpen: Bool?
+    let shiftState: String?
+    let timeToFullCharge, chargerActualCurrent, chargerVoltage: Double?
+    let chargerPhases: Int?
+    let chargeEnergyAdded: Double?
+    let updateAvailable: Bool?
+    let updateVersion, updateStatus: String?
+    let isPreconditioning, isUserPresent: Bool?
+    let tpmsPressureFl, tpmsPressureFr, tpmsPressureRl, tpmsPressureRr: Double?
+    let tpmsSoftWarningFl, tpmsSoftWarningFr, tpmsSoftWarningRl, tpmsSoftWarningRr: Bool?
 }

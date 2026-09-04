@@ -16,6 +16,17 @@ struct Drive: Decodable, Identifiable, Hashable {
     let startLatitude, startLongitude, endLatitude, endLongitude: Double?
 }
 
+struct DriveDetailEnvelope: Decodable { let data: DriveDetail }
+struct DriveDetail: Decodable {
+    let id: Int
+    let positions: [DrivePosition]
+}
+struct DrivePosition: Decodable, Hashable {
+    let latitude, longitude: Double
+    let speed: Int?
+    let date: String
+}
+
 struct ChargingSession: Decodable, Identifiable, Hashable {
     let id: Int
     let startDate, endDate: String?
@@ -25,6 +36,18 @@ struct ChargingSession: Decodable, Identifiable, Hashable {
     let cost, outsideTempAvg: Double?
     let name: String
     let latitude, longitude: Double?
+}
+
+struct ChargingDetailEnvelope: Decodable { let data: ChargingDetail }
+struct ChargingDetail: Decodable {
+    let id: Int
+    let samples: [ChargingSample]
+}
+struct ChargingSample: Decodable, Identifiable {
+    var id: String { date }
+    let date: String
+    let batteryLevel, chargerPower: Int?
+    let energyAddedKwh, outsideTemp: Double?
 }
 
 struct Statistics: Decodable {
