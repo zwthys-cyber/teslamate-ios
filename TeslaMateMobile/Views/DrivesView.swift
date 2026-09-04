@@ -1,4 +1,5 @@
 import MapKit
+import Charts
 import SwiftUI
 
 struct DrivesView: View {
@@ -68,6 +69,17 @@ private struct DriveDetailView: View {
                 .frame(height: 280)
                 .listRowInsets(.init())
             } else if loading { ProgressView("正在载入轨迹…") }
+            if !positions.isEmpty {
+                Section("速度曲线") {
+                    Chart(Array(positions.enumerated()), id: \.offset) { point in
+                        LineMark(x: .value("轨迹点", point.offset), y: .value("速度", point.element.speed ?? 0))
+                            .foregroundStyle(.white)
+                            .interpolationMethod(.catmullRom)
+                    }
+                    .chartYScale(domain: 0...max(20, positions.compactMap(\.speed).max() ?? 20))
+                    .frame(height: 210)
+                }
+            }
             Section("路线") { LabeledContent("出发", value: drive.startName); LabeledContent("到达", value: drive.endName) }
             Section("驾驶数据") {
                 LabeledContent("距离", value: String(format: "%.2f km", drive.distanceKm ?? 0))
@@ -75,8 +87,13 @@ private struct DriveDetailView: View {
                 LabeledContent("最高速度", value: "\(drive.speedMax ?? 0) km/h")
                 LabeledContent("最高功率", value: "\(drive.powerMax ?? 0) kW")
                 LabeledContent("平均外温", value: String(format: "%.1f ℃", drive.outsideTempAvg ?? 0))
+                LabeledContent("轨迹点", value: "\(positions.count)")
             }
-            Section("续航变化") { LabeledContent("开始", value: String(format: "%.1f km", drive.startRangeKm ?? 0)); LabeledContent("结束", value: String(format: "%.1f km", drive.endRangeKm ?? 0)) }
+            Section("续航变化") {
+                LabeledContent("开始", value: String(format: "%.1f km", drive.startRangeKm ?? 0))
+                LabeledContent("结束", value: String(format: "%.1f km", drive.endRangeKm ?? 0))
+                LabeledContent("续航消耗", value: String(format: "%.1f km", max(0, (drive.startRangeKm ?? 0) - (drive.endRangeKm ?? 0))))
+            }
         }
         .navigationTitle("行程详情")
         .toolbar {

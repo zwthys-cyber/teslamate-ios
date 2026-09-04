@@ -4,6 +4,7 @@ struct DriveEnvelope: Decodable { let data: [Drive] }
 struct ChargingEnvelope: Decodable { let data: [ChargingSession] }
 struct StatisticsEnvelope: Decodable { let data: Statistics }
 struct GeofenceEnvelope: Decodable { let data: [Geofence] }
+struct SoftwareUpdateEnvelope: Decodable { let data: [SoftwareUpdate] }
 
 struct Drive: Codable, Identifiable, Hashable {
     let id: Int
@@ -70,4 +71,9 @@ struct Geofence: Codable, Identifiable, Hashable {
     let radius: Int
     let billingType: String?
     let costPerUnit, sessionFee: Double?
+}
+
+struct SoftwareUpdate: Codable, Identifiable, Hashable {
+    let id: Int
+    let startDate, endDate, version: String?
 }

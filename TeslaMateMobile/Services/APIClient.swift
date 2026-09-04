@@ -45,6 +45,10 @@ struct APIClient {
         try await request("api/mobile/v1/geofences", as: GeofenceEnvelope.self).data
     }
 
+    func updates(carID: Int) async throws -> [SoftwareUpdate] {
+        try await request("api/mobile/v1/updates?car_id=\(carID)", as: SoftwareUpdateEnvelope.self).data
+    }
+
     private func request<T: Decodable>(_ path: String, as type: T.Type) async throws -> T {
         guard let base = URL(string: serverURL), let url = URL(string: path, relativeTo: base) else { throw APIError.invalidURL }
         var request = URLRequest(url: url)

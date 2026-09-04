@@ -11,6 +11,7 @@ final class AppSession {
     var chargingSessions: [ChargingSession] = []
     var statistics = Statistics.empty
     var geofences: [Geofence] = []
+    var updates: [SoftwareUpdate] = []
     var isLoading = false
     var errorMessage: String?
     var lastUpdated: Date?
@@ -26,6 +27,7 @@ final class AppSession {
         chargingSessions = cache.chargingSessions
         statistics = cache.statistics
         geofences = cache.geofences
+        updates = cache.updates ?? []
         lastUpdated = cache.lastUpdated
     }
 
@@ -53,7 +55,8 @@ final class AppSession {
                 async let newCharging = client.charging(carID: carID)
                 async let newStatistics = client.statistics(carID: carID)
                 async let newGeofences = client.geofences()
-                (drives, chargingSessions, statistics, geofences) = try await (newDrives, newCharging, newStatistics, newGeofences)
+                async let newUpdates = client.updates(carID: carID)
+                (drives, chargingSessions, statistics, geofences, updates) = try await (newDrives, newCharging, newStatistics, newGeofences, newUpdates)
             }
             lastUpdated = Date()
             errorMessage = nil
@@ -78,7 +81,8 @@ final class AppSession {
             async let newCharging = client.charging(carID: carID)
             async let newStatistics = client.statistics(carID: carID)
             async let newGeofences = client.geofences()
-            (drives, chargingSessions, statistics, geofences) = try await (newDrives, newCharging, newStatistics, newGeofences)
+            async let newUpdates = client.updates(carID: carID)
+            (drives, chargingSessions, statistics, geofences, updates) = try await (newDrives, newCharging, newStatistics, newGeofences, newUpdates)
             lastUpdated = Date()
             errorMessage = nil
             persistCache()
@@ -87,6 +91,6 @@ final class AppSession {
 
     private func persistCache() {
         guard let lastUpdated else { return }
-        CacheStore.save(.init(vehicles: vehicles, drives: drives, chargingSessions: chargingSessions, statistics: statistics, geofences: geofences, lastUpdated: lastUpdated))
+        CacheStore.save(.init(vehicles: vehicles, drives: drives, chargingSessions: chargingSessions, statistics: statistics, geofences: geofences, updates: updates, lastUpdated: lastUpdated))
     }
 }

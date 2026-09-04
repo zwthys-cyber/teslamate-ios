@@ -25,6 +25,8 @@ struct MoreView: View {
                         TMSectionTitle("数据与地点")
                         NavigationLink { GeofencesMapView(geofences: session.geofences) } label: { MenuRow(icon: "map.fill", title: "地理围栏", subtitle: "\(session.geofences.count) 个已保存地点") }
                         Divider().overlay(.white.opacity(0.1))
+                        NavigationLink { SoftwareUpdatesView(updates: session.updates) } label: { MenuRow(icon: "gearshape.2", title: "软件更新历史", subtitle: "\(session.updates.count) 条车辆固件记录") }
+                        Divider().overlay(.white.opacity(0.1))
                         NavigationLink { GrafanaView(url: grafanaURL) } label: { MenuRow(icon: "chart.xyaxis.line", title: "完整中文仪表盘", subtitle: "驾驶、充电、效率、电池与费用") }
                     }.buttonStyle(.plain).tmCard()
 
@@ -34,7 +36,7 @@ struct MoreView: View {
                         Divider().overlay(.white.opacity(0.1))
                         MenuRow(icon: "arrow.clockwise", title: "自动同步", subtitle: "每 60 秒")
                         Divider().overlay(.white.opacity(0.1))
-                        MenuRow(icon: "info.circle", title: "TeslaMate iOS", subtitle: "版本 0.8.0 · 黑白专业版")
+                        MenuRow(icon: "info.circle", title: "TeslaMate iOS", subtitle: "版本 1.2.0 · 黑白专业版")
                     }.buttonStyle(.plain).tmCard()
 
                     if let error = session.errorMessage {
@@ -53,6 +55,30 @@ struct MoreView: View {
         if let error = session.errorMessage { return error }
         if let date = session.lastUpdated { return "上次同步 " + date.formatted(date: .omitted, time: .shortened) }
         return "等待首次同步"
+    }
+}
+
+private struct SoftwareUpdatesView: View {
+    let updates: [SoftwareUpdate]
+    var body: some View {
+        List {
+            ForEach(updates) { update in
+                HStack(alignment: .top, spacing: 14) {
+                    VStack(spacing: 0) {
+                        Circle().fill(.white).frame(width: 9, height: 9)
+                        Rectangle().fill(.white.opacity(0.18)).frame(width: 1, height: 48)
+                    }
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(update.version ?? "未知版本").font(.headline.monospaced())
+                        Text(DateText.format(update.startDate)).font(.caption).foregroundStyle(.secondary)
+                        Text(update.endDate == nil ? "记录中" : "已完成").font(.caption2).foregroundStyle(.tertiary)
+                    }
+                }
+                .padding(.vertical, 5)
+            }
+        }
+        .navigationTitle("软件更新历史")
+        .overlay { if updates.isEmpty { ContentUnavailableView("暂无更新记录", systemImage: "gearshape.2") } }
     }
 }
 

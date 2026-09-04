@@ -57,8 +57,19 @@ private struct ChargingDetailView: View {
         List {
             if !samples.isEmpty {
                 Section("充电功率") {
-                    Chart(samples) { sample in LineMark(x: .value("时间", sample.date), y: .value("kW", sample.chargerPower ?? 0)).foregroundStyle(.white) }
+                    Chart(samples) { sample in
+                        LineMark(x: .value("时间", sample.date), y: .value("kW", sample.chargerPower ?? 0))
+                            .foregroundStyle(.white).interpolationMethod(.catmullRom)
+                    }
                         .frame(height: 220)
+                }
+                Section("电量变化") {
+                    Chart(samples) { sample in
+                        LineMark(x: .value("时间", sample.date), y: .value("电量", sample.batteryLevel ?? 0))
+                            .foregroundStyle(.white).interpolationMethod(.catmullRom)
+                    }
+                    .chartYScale(domain: 0...100)
+                    .frame(height: 220)
                 }
             }
             Section("充电详情") {
@@ -66,6 +77,10 @@ private struct ChargingDetailView: View {
                 LabeledContent("电量", value: "\(item.startBatteryLevel ?? 0)% → \(item.endBatteryLevel ?? 0)%")
                 LabeledContent("充入", value: String(format: "%.2f kWh", item.energyAddedKwh ?? 0))
                 LabeledContent("耗用", value: String(format: "%.2f kWh", item.energyUsedKwh ?? 0))
+                LabeledContent("峰值功率", value: "\(samples.compactMap(\.chargerPower).max() ?? 0) kW")
+                if let used = item.energyUsedKwh, used > 0 {
+                    LabeledContent("充电效率", value: String(format: "%.1f%%", (item.energyAddedKwh ?? 0) / used * 100))
+                }
                 LabeledContent("时长", value: "\(item.durationMin ?? 0) 分钟")
                 if let cost = item.cost { LabeledContent("费用", value: String(format: "¥%.2f", cost)) }
             }
