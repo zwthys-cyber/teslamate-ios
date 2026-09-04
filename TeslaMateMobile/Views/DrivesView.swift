@@ -61,10 +61,10 @@ struct DriveDetailView: View {
         List {
             if !positions.isEmpty {
                 Map {
-                    MapPolyline(coordinates: positions.map { .init(latitude: $0.latitude, longitude: $0.longitude) })
+                    MapPolyline(coordinates: positions.map { ChinaCoordinate.display(latitude: $0.latitude, longitude: $0.longitude) })
                         .stroke(.white, lineWidth: 5)
-                    if let first = positions.first { Marker("出发", coordinate: .init(latitude: first.latitude, longitude: first.longitude)).tint(.white) }
-                    if let last = positions.last { Marker("到达", coordinate: .init(latitude: last.latitude, longitude: last.longitude)).tint(.gray) }
+                    if let first = positions.first { Marker("出发", coordinate: ChinaCoordinate.display(latitude: first.latitude, longitude: first.longitude)).tint(.white) }
+                    if let last = positions.last { Marker("到达", coordinate: ChinaCoordinate.display(latitude: last.latitude, longitude: last.longitude)).tint(.gray) }
                 }
                 .frame(height: 280)
                 .listRowInsets(.init())

@@ -97,7 +97,7 @@ struct VehicleDashboard: View {
                     Annotation(vehicle.name, coordinate: coordinate) {
                         Image(systemName: "car.side.fill").font(.headline).padding(10).background(.white, in: Circle()).foregroundStyle(.black).shadow(radius: 8)
                     }
-                }.frame(height: 250).clipShape(.rect(cornerRadius: 16)).overlay { RoundedRectangle(cornerRadius: 16).stroke(TMStyle.border, lineWidth: 0.5) }
+                }.id("\(coordinate.latitude),\(coordinate.longitude)").frame(height: 250).clipShape(.rect(cornerRadius: 16)).overlay { RoundedRectangle(cornerRadius: 16).stroke(TMStyle.border, lineWidth: 0.5) }
                 Button {
                     let item = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
                     item.name = vehicle.name
@@ -119,7 +119,7 @@ struct VehicleDashboard: View {
         }.buttonStyle(.plain)
     }
 
-    private var coordinate: CLLocationCoordinate2D? { guard let lat = vehicle.latitude, let lon = vehicle.longitude else { return nil }; return .init(latitude: lat, longitude: lon) }
+    private var coordinate: CLLocationCoordinate2D? { guard let lat = vehicle.latitude, let lon = vehicle.longitude else { return nil }; return ChinaCoordinate.display(latitude: lat, longitude: lon) }
     private func distance(_ value: Double?) -> String { value.map { String(format: $0 > 1000 ? "%.0f km" : "%.1f km", $0) } ?? "—" }
     private func temperature(_ value: Double?) -> String { value.map { String(format: "%.1f ℃", $0) } ?? "—" }
     private var stateName: String { ["online":"在线", "asleep":"休眠", "offline":"离线", "driving":"行驶中", "charging":"充电中"][vehicle.state ?? ""] ?? "未知" }

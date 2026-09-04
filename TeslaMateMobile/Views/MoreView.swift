@@ -40,7 +40,7 @@ struct MoreView: View {
                         Divider().overlay(.white.opacity(0.1))
                         MenuRow(icon: "arrow.clockwise", title: "自动同步", subtitle: "每 60 秒")
                         Divider().overlay(.white.opacity(0.1))
-                        MenuRow(icon: "info.circle", title: "TeslaMate iOS", subtitle: "版本 2.0.0 · 黑白专业版")
+                        MenuRow(icon: "info.circle", title: "TeslaMate iOS", subtitle: "版本 2.0.1 · 黑白专业版")
                     }.buttonStyle(.plain).tmCard()
 
                     if let error = session.errorMessage {
@@ -102,8 +102,8 @@ private struct GeofencesMapView: View {
     var body: some View {
         Map {
             ForEach(geofences) { place in
-                Marker(place.name, coordinate: .init(latitude: place.latitude, longitude: place.longitude)).tint(.white)
-                MapCircle(center: .init(latitude: place.latitude, longitude: place.longitude), radius: CLLocationDistance(place.radius))
+                Marker(place.name, coordinate: ChinaCoordinate.display(latitude: place.latitude, longitude: place.longitude)).tint(.white)
+                MapCircle(center: ChinaCoordinate.display(latitude: place.latitude, longitude: place.longitude), radius: CLLocationDistance(place.radius))
                     .foregroundStyle(.white.opacity(0.12)).stroke(.white.opacity(0.7), lineWidth: 1)
             }
         }
