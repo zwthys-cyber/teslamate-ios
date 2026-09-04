@@ -1,8 +1,8 @@
 import SwiftUI
 
 enum TMStyle {
-    static let accent = Color(red: 0.91, green: 0.13, blue: 0.16)
-    static let background = Color(red: 0.035, green: 0.039, blue: 0.047)
+    static let accent = Color.white
+    static let background = Color.black
     static let surface = Color.white.opacity(0.065)
     static let border = Color.white.opacity(0.09)
 }

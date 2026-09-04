@@ -37,7 +37,7 @@ struct ConnectionView: View {
                     Text("请先打开 Tailscale。访问令牌只保存在本机钥匙串中。")
                 }
                 if let error = session.errorMessage {
-                    Section { Text(error).foregroundStyle(.red) }
+                    Section { Label(error, systemImage: "exclamationmark.triangle").foregroundStyle(.primary) }
                 }
             }
             .navigationTitle("连接设置")

@@ -27,7 +27,7 @@ private struct ChargingDetailView: View {
         List {
             if !samples.isEmpty {
                 Section("充电功率") {
-                    Chart(samples) { sample in LineMark(x: .value("时间", sample.date), y: .value("kW", sample.chargerPower ?? 0)).foregroundStyle(.green) }
+                    Chart(samples) { sample in LineMark(x: .value("时间", sample.date), y: .value("kW", sample.chargerPower ?? 0)).foregroundStyle(.white) }
                         .frame(height: 220)
                 }
             }

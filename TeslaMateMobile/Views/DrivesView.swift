@@ -34,9 +34,9 @@ private struct DriveDetailView: View {
             if !positions.isEmpty {
                 Map {
                     MapPolyline(coordinates: positions.map { .init(latitude: $0.latitude, longitude: $0.longitude) })
-                        .stroke(.red, lineWidth: 5)
-                    if let first = positions.first { Marker("出发", coordinate: .init(latitude: first.latitude, longitude: first.longitude)).tint(.green) }
-                    if let last = positions.last { Marker("到达", coordinate: .init(latitude: last.latitude, longitude: last.longitude)).tint(.red) }
+                        .stroke(.white, lineWidth: 5)
+                    if let first = positions.first { Marker("出发", coordinate: .init(latitude: first.latitude, longitude: first.longitude)).tint(.white) }
+                    if let last = positions.last { Marker("到达", coordinate: .init(latitude: last.latitude, longitude: last.longitude)).tint(.gray) }
                 }
                 .frame(height: 280)
                 .listRowInsets(.init())

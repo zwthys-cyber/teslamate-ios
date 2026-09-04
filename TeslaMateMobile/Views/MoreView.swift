@@ -11,7 +11,7 @@ struct MoreView: View {
             Section("地点与围栏") {
                 NavigationLink { GeofencesMapView(geofences: session.geofences) } label: { Label("围栏地图", systemImage: "map.fill") }
                 ForEach(session.geofences) { place in
-                    Label { LabeledContent(place.name, value: "\(place.radius) m") } icon: { Image(systemName: "mappin.circle.fill").foregroundStyle(.red) }
+                    Label { LabeledContent(place.name, value: "\(place.radius) m") } icon: { Image(systemName: "mappin.circle.fill").foregroundStyle(.primary) }
                 }
             }
             Section("完整中文仪表盘") {
@@ -23,7 +23,7 @@ struct MoreView: View {
                 LabeledContent("自动刷新", value: "每 60 秒")
                 LabeledContent("服务器", value: session.serverURL)
             }
-            if let error = session.errorMessage { Section("最近错误") { Text(error).foregroundStyle(.red) } }
+            if let error = session.errorMessage { Section("最近错误") { Label(error, systemImage: "exclamationmark.triangle") } }
         }
         .navigationTitle("更多")
         .sheet(isPresented: $settings) { ConnectionView() }
@@ -37,9 +37,9 @@ private struct GeofencesMapView: View {
     var body: some View {
         Map {
             ForEach(geofences) { place in
-                Marker(place.name, coordinate: .init(latitude: place.latitude, longitude: place.longitude)).tint(.red)
+                Marker(place.name, coordinate: .init(latitude: place.latitude, longitude: place.longitude)).tint(.white)
                 MapCircle(center: .init(latitude: place.latitude, longitude: place.longitude), radius: CLLocationDistance(place.radius))
-                    .foregroundStyle(.red.opacity(0.14)).stroke(.red.opacity(0.7), lineWidth: 1)
+                    .foregroundStyle(.white.opacity(0.12)).stroke(.white.opacity(0.7), lineWidth: 1)
             }
         }
         .navigationTitle("地理围栏")

@@ -70,12 +70,12 @@ struct VehicleDashboard: View {
         VStack(spacing: 14) {
             TMSectionTitle("车辆状态", detail: "自动更新")
             LazyVGrid(columns: [.init(.flexible()), .init(.flexible())], spacing: 12) {
-                StatusTile("车锁", vehicle.locked == true ? "已锁定" : "未锁定", vehicle.locked == true ? "lock.fill" : "lock.open.fill", vehicle.locked == true ? .green : .orange)
-                StatusTile("空调", vehicle.isClimateOn == true ? "运行中" : "已关闭", "fan.fill", vehicle.isClimateOn == true ? .cyan : .secondary)
-                StatusTile("车内", temperature(vehicle.insideTemp), "thermometer.medium", .orange)
-                StatusTile("车外", temperature(vehicle.outsideTemp), "sun.max.fill", .yellow)
-                StatusTile("总里程", distance(vehicle.odometer), "gauge.with.dots.needle.67percent", .blue)
-                StatusTile("软件", vehicle.version ?? "—", "cpu", .purple)
+                StatusTile("车锁", vehicle.locked == true ? "已锁定" : "未锁定", vehicle.locked == true ? "lock.fill" : "lock.open.fill", .white)
+                StatusTile("空调", vehicle.isClimateOn == true ? "运行中" : "已关闭", "fan.fill", .white)
+                StatusTile("车内", temperature(vehicle.insideTemp), "thermometer.medium", .white)
+                StatusTile("车外", temperature(vehicle.outsideTemp), "sun.max.fill", .white)
+                StatusTile("总里程", distance(vehicle.odometer), "gauge.with.dots.needle.67percent", .white)
+                StatusTile("软件", vehicle.version ?? "—", "cpu", .white)
             }
         }
     }
@@ -86,7 +86,7 @@ struct VehicleDashboard: View {
                 TMSectionTitle("当前位置", detail: vehicle.geofence)
                 Map(initialPosition: .region(.init(center: coordinate, span: .init(latitudeDelta: 0.012, longitudeDelta: 0.012)))) {
                     Annotation(vehicle.name, coordinate: coordinate) {
-                        Image(systemName: "car.side.fill").font(.headline).padding(10).background(TMStyle.accent, in: Circle()).foregroundStyle(.white).shadow(radius: 8)
+                        Image(systemName: "car.side.fill").font(.headline).padding(10).background(.white, in: Circle()).foregroundStyle(.black).shadow(radius: 8)
                     }
                 }.frame(height: 230).clipShape(.rect(cornerRadius: 16))
             }.tmCard()
@@ -107,8 +107,8 @@ struct VehicleDashboard: View {
     private func distance(_ value: Double?) -> String { value.map { String(format: $0 > 1000 ? "%.0f km" : "%.1f km", $0) } ?? "—" }
     private func temperature(_ value: Double?) -> String { value.map { String(format: "%.1f ℃", $0) } ?? "—" }
     private var stateName: String { ["online":"在线", "asleep":"休眠", "offline":"离线", "driving":"行驶中", "charging":"充电中"][vehicle.state ?? ""] ?? "未知" }
-    private var stateColor: Color { vehicle.state == "online" ? .green : vehicle.state == "driving" ? .blue : vehicle.state == "charging" ? .green : .secondary }
-    private var batteryColor: Color { (vehicle.batteryLevel ?? 0) < 20 ? .red : .green }
+    private var stateColor: Color { ["online", "driving", "charging"].contains(vehicle.state ?? "") ? .white : .secondary }
+    private var batteryColor: Color { (vehicle.batteryLevel ?? 0) < 20 ? .secondary : .white }
     private var batteryIcon: String { (vehicle.batteryLevel ?? 0) < 20 ? "battery.25percent" : "battery.75percent" }
 }
 
