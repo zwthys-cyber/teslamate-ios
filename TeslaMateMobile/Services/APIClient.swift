@@ -22,7 +22,7 @@ struct APIClient {
     }
 
     func drives(carID: Int) async throws -> [Drive] {
-        try await request("api/mobile/v1/drives?car_id=\(carID)&limit=500", as: DriveEnvelope.self).data
+        try await request("api/mobile/v1/drives?car_id=\(carID)&limit=200", as: DriveEnvelope.self).data
     }
 
     func drive(id: Int) async throws -> DriveDetail {
@@ -30,7 +30,7 @@ struct APIClient {
     }
 
     func charging(carID: Int) async throws -> [ChargingSession] {
-        try await request("api/mobile/v1/charging?car_id=\(carID)&limit=500", as: ChargingEnvelope.self).data
+        try await request("api/mobile/v1/charging?car_id=\(carID)&limit=200", as: ChargingEnvelope.self).data
     }
 
     func charging(id: Int) async throws -> ChargingDetail {
