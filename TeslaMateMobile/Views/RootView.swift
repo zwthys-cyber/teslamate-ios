@@ -8,7 +8,7 @@ struct RootView: View {
             else if session.vehicles.isEmpty && session.isLoading { ProgressView("正在载入 TeslaMate…") }
             else if let vehicle = session.selectedVehicle {
                 TabView {
-                    NavigationStack { VehicleDashboard(vehicle: vehicle).navigationTitle("车辆") }
+                    NavigationStack { VehicleDashboard(vehicle: vehicle).navigationTitle("").navigationBarTitleDisplayMode(.inline) }
                         .tabItem { Label("车辆", systemImage: "car.side.fill") }
                     NavigationStack { DrivesView() }
                         .tabItem { Label("行程", systemImage: "road.lanes") }

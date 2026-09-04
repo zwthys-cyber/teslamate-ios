@@ -40,7 +40,7 @@ struct MoreView: View {
                         Divider().overlay(.white.opacity(0.1))
                         MenuRow(icon: "arrow.clockwise", title: "自动同步", subtitle: "每 60 秒")
                         Divider().overlay(.white.opacity(0.1))
-                        MenuRow(icon: "info.circle", title: "TeslaMate iOS", subtitle: "版本 1.5.0 · 黑白专业版")
+                        MenuRow(icon: "info.circle", title: "TeslaMate iOS", subtitle: "版本 2.0.0 · 黑白专业版")
                     }.buttonStyle(.plain).tmCard()
 
                     if let error = session.errorMessage {

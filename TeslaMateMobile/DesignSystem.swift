@@ -3,16 +3,17 @@ import SwiftUI
 enum TMStyle {
     static let accent = Color.white
     static let background = Color.black
-    static let surface = Color.white.opacity(0.065)
-    static let border = Color.white.opacity(0.09)
+    static let surface = Color.white.opacity(0.055)
+    static let elevated = Color.white.opacity(0.085)
+    static let border = Color.white.opacity(0.12)
 }
 
 struct TMCard: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .padding(16)
-            .background(TMStyle.surface, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .overlay { RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(TMStyle.border, lineWidth: 0.75) }
+            .padding(18)
+            .background(TMStyle.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay { RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(TMStyle.border, lineWidth: 0.5) }
     }
 }
 

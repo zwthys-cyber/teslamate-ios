@@ -9,14 +9,14 @@ struct VehicleDashboard: View {
         ZStack {
             TMStyle.background.ignoresSafeArea()
             ScrollView {
-                LazyVStack(spacing: 22) {
+                LazyVStack(spacing: 28) {
                     if session.vehicles.count > 1 { vehiclePicker }
                     hero
                     primaryStatus
                     locationCard
                     detailsLink
                 }
-                .padding(.horizontal, 18).padding(.bottom, 30)
+                .padding(.horizontal, 20).padding(.bottom, 36)
             }
             .refreshable { await session.refresh() }
         }
@@ -37,58 +37,67 @@ struct VehicleDashboard: View {
     }
 
     private var hero: some View {
-        VStack(spacing: 12) {
-            HStack(alignment: .firstTextBaseline) {
+        VStack(spacing: 26) {
+            HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(vehicle.name).font(.system(.largeTitle, design: .rounded, weight: .bold))
+                    Text(vehicle.name).font(.system(size: 34, weight: .semibold, design: .default)).tracking(-0.8)
                     Text([vehicle.model.map { "Model \($0)" }, vehicle.trimBadging, "VIN \(vehicle.vinSuffix)"].compactMap { $0 }.joined(separator: "  ·  "))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Label(stateName, systemImage: "circle.fill")
-                    .font(.caption.weight(.semibold)).foregroundStyle(stateColor)
-                    .padding(.horizontal, 11).padding(.vertical, 7)
-                    .background(stateColor.opacity(0.12), in: Capsule())
+                HStack(spacing: 7) { Circle().fill(stateColor).frame(width: 6, height: 6); Text(stateName) }
+                    .font(.caption.weight(.medium)).foregroundStyle(stateColor)
+                    .padding(.horizontal, 11).padding(.vertical, 7).background(TMStyle.surface, in: Capsule())
             }
 
             Image(systemName: "car.side.fill")
-                .resizable().scaledToFit().frame(maxWidth: 270, maxHeight: 115)
-                .symbolRenderingMode(.hierarchical).foregroundStyle(.white.opacity(0.92))
-                .shadow(color: .white.opacity(0.12), radius: 24, y: 12)
-                .padding(.vertical, 12)
+                .resizable().scaledToFit().frame(maxWidth: 306, maxHeight: 124)
+                .symbolRenderingMode(.hierarchical).foregroundStyle(.white.opacity(0.9))
+                .padding(.top, 4)
 
-            HStack(spacing: 8) {
-                Image(systemName: batteryIcon).foregroundStyle(batteryColor)
-                Text("\(vehicle.batteryLevel ?? 0)%").font(.title2.bold().monospacedDigit())
-                Text("·").foregroundStyle(.tertiary)
-                Text(distance(vehicle.estBatteryRangeKm)).font(.title3.weight(.medium)).foregroundStyle(.secondary)
+            HStack(alignment: .lastTextBaseline, spacing: 14) {
+                Text("\(vehicle.batteryLevel ?? 0)").font(.system(size: 64, weight: .medium, design: .rounded)).tracking(-3).monospacedDigit()
+                Text("%").font(.title2.weight(.medium)).foregroundStyle(.secondary).padding(.bottom, 7)
+                Spacer()
+                VStack(alignment: .trailing, spacing: 3) {
+                    Text(distance(vehicle.estBatteryRangeKm)).font(.title2.weight(.semibold).monospacedDigit())
+                    Text("预估续航").font(.caption).foregroundStyle(.secondary)
+                }
             }
+            .accessibilityElement(children: .combine)
         }
     }
 
     private var primaryStatus: some View {
-        VStack(spacing: 14) {
-            TMSectionTitle("车辆状态", detail: "自动更新")
-            LazyVGrid(columns: [.init(.flexible()), .init(.flexible())], spacing: 12) {
-                StatusTile("车锁", vehicle.locked == true ? "已锁定" : "未锁定", vehicle.locked == true ? "lock.fill" : "lock.open.fill", .white)
-                StatusTile("空调", vehicle.isClimateOn == true ? "运行中" : "已关闭", "fan.fill", .white)
-                StatusTile("车内", temperature(vehicle.insideTemp), "thermometer.medium", .white)
-                StatusTile("车外", temperature(vehicle.outsideTemp), "sun.max.fill", .white)
-                StatusTile("总里程", distance(vehicle.odometer), "gauge.with.dots.needle.67percent", .white)
-                StatusTile("软件", vehicle.version ?? "—", "cpu", .white)
+        VStack(alignment: .leading, spacing: 14) {
+            TMSectionTitle("即时状态", detail: "自动更新")
+            HStack(spacing: 0) {
+                StatusMetric("车锁", vehicle.locked == true ? "已锁" : "未锁", vehicle.locked == true ? "lock.fill" : "lock.open")
+                Divider().frame(height: 42)
+                StatusMetric("空调", vehicle.isClimateOn == true ? "运行" : "关闭", "fan")
+                Divider().frame(height: 42)
+                StatusMetric("车内", temperature(vehicle.insideTemp), "thermometer.medium")
             }
+            .tmCard()
+            VStack(spacing: 0) {
+                DetailLine(title: "总里程", value: distance(vehicle.odometer), icon: "gauge.with.dots.needle.67percent")
+                Divider().overlay(.white.opacity(0.1))
+                DetailLine(title: "车外温度", value: temperature(vehicle.outsideTemp), icon: "thermometer.low")
+                Divider().overlay(.white.opacity(0.1))
+                DetailLine(title: "车辆软件", value: vehicle.version ?? "—", icon: "cpu")
+            }.padding(.horizontal, 16).background(TMStyle.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous)).overlay { RoundedRectangle(cornerRadius: 16).stroke(TMStyle.border, lineWidth: 0.5) }
         }
     }
 
     @ViewBuilder private var locationCard: some View {
         if let coordinate {
-            VStack(spacing: 14) {
+            VStack(alignment: .leading, spacing: 14) {
                 TMSectionTitle("当前位置", detail: vehicle.geofence)
                 Map(initialPosition: .region(.init(center: coordinate, span: .init(latitudeDelta: 0.012, longitudeDelta: 0.012)))) {
                     Annotation(vehicle.name, coordinate: coordinate) {
                         Image(systemName: "car.side.fill").font(.headline).padding(10).background(.white, in: Circle()).foregroundStyle(.black).shadow(radius: 8)
                     }
-                }.frame(height: 230).clipShape(.rect(cornerRadius: 16))
+                }.frame(height: 250).clipShape(.rect(cornerRadius: 16)).overlay { RoundedRectangle(cornerRadius: 16).stroke(TMStyle.border, lineWidth: 0.5) }
                 Button {
                     let item = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
                     item.name = vehicle.name
@@ -96,7 +105,7 @@ struct VehicleDashboard: View {
                 } label: {
                     Label("在系统地图中打开", systemImage: "arrow.up.right.square").font(.subheadline.weight(.semibold)).frame(maxWidth: .infinity)
                 }.buttonStyle(.plain)
-            }.tmCard()
+            }
         }
     }
 
@@ -119,17 +128,17 @@ struct VehicleDashboard: View {
     private var batteryIcon: String { (vehicle.batteryLevel ?? 0) < 20 ? "battery.25percent" : "battery.75percent" }
 }
 
-private struct StatusTile: View {
+private struct StatusMetric: View {
     let title, value, icon: String
-    let tint: Color
-    init(_ title: String, _ value: String, _ icon: String, _ tint: Color) { self.title = title; self.value = value; self.icon = icon; self.tint = tint }
+    init(_ title: String, _ value: String, _ icon: String) { self.title = title; self.value = value; self.icon = icon }
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon).font(.title3).foregroundStyle(tint).frame(width: 34, height: 34).background(tint.opacity(0.12), in: Circle())
-            VStack(alignment: .leading, spacing: 3) { Text(title).font(.caption).foregroundStyle(.secondary); Text(value).font(.subheadline.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.75) }
-            Spacer(minLength: 0)
-        }.padding(12).background(TMStyle.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        VStack(spacing: 7) { Image(systemName: icon).font(.body); Text(value).font(.subheadline.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.75); Text(title).font(.caption2).foregroundStyle(.secondary) }.frame(maxWidth: .infinity)
     }
+}
+
+private struct DetailLine: View {
+    let title, value, icon: String
+    var body: some View { HStack(spacing: 13) { Image(systemName: icon).foregroundStyle(.secondary).frame(width: 24); Text(title).font(.subheadline); Spacer(); Text(value).font(.subheadline.weight(.medium).monospacedDigit()) }.padding(.vertical, 14) }
 }
 
 private struct VehicleDetailsView: View {
