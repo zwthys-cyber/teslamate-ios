@@ -55,6 +55,7 @@ private struct DriveDetailView: View {
     let drive: Drive
     @State private var positions: [DrivePosition] = []
     @State private var loading = true
+    @State private var exportURL: URL?
     var body: some View {
         List {
             if !positions.isEmpty {
@@ -76,8 +77,16 @@ private struct DriveDetailView: View {
                 LabeledContent("平均外温", value: String(format: "%.1f ℃", drive.outsideTempAvg ?? 0))
             }
             Section("续航变化") { LabeledContent("开始", value: String(format: "%.1f km", drive.startRangeKm ?? 0)); LabeledContent("结束", value: String(format: "%.1f km", drive.endRangeKm ?? 0)) }
-        }.navigationTitle("行程详情").task {
-            do { positions = try await APIClient(serverURL: session.serverURL, token: session.token).drive(id: drive.id).positions }
+        }
+        .navigationTitle("行程详情")
+        .toolbar {
+            if let exportURL { ToolbarItem(placement: .topBarTrailing) { ShareLink(item: exportURL) { Image(systemName: "square.and.arrow.up") } } }
+        }
+        .task {
+            do {
+                positions = try await APIClient(serverURL: session.serverURL, token: session.token).drive(id: drive.id).positions
+                exportURL = ExportBuilder.gpx(drive: drive, positions: positions)
+            }
             catch { session.errorMessage = error.localizedDescription }
             loading = false
         }

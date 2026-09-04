@@ -52,6 +52,7 @@ private struct ChargingDetailView: View {
     @Environment(AppSession.self) private var session
     let item: ChargingSession
     @State private var samples: [ChargingSample] = []
+    @State private var exportURL: URL?
     var body: some View {
         List {
             if !samples.isEmpty {
@@ -68,8 +69,16 @@ private struct ChargingDetailView: View {
                 LabeledContent("时长", value: "\(item.durationMin ?? 0) 分钟")
                 if let cost = item.cost { LabeledContent("费用", value: String(format: "¥%.2f", cost)) }
             }
-        }.navigationTitle("充电详情").task {
-            do { samples = try await APIClient(serverURL: session.serverURL, token: session.token).charging(id: item.id).samples }
+        }
+        .navigationTitle("充电详情")
+        .toolbar {
+            if let exportURL { ToolbarItem(placement: .topBarTrailing) { ShareLink(item: exportURL) { Image(systemName: "square.and.arrow.up") } } }
+        }
+        .task {
+            do {
+                samples = try await APIClient(serverURL: session.serverURL, token: session.token).charging(id: item.id).samples
+                exportURL = ExportBuilder.csv(session: item, samples: samples)
+            }
             catch { session.errorMessage = error.localizedDescription }
         }
     }

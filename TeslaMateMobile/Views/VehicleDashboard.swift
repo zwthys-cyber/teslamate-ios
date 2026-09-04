@@ -89,6 +89,13 @@ struct VehicleDashboard: View {
                         Image(systemName: "car.side.fill").font(.headline).padding(10).background(.white, in: Circle()).foregroundStyle(.black).shadow(radius: 8)
                     }
                 }.frame(height: 230).clipShape(.rect(cornerRadius: 16))
+                Button {
+                    let item = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
+                    item.name = vehicle.name
+                    item.openInMaps()
+                } label: {
+                    Label("在系统地图中打开", systemImage: "arrow.up.right.square").font(.subheadline.weight(.semibold)).frame(maxWidth: .infinity)
+                }.buttonStyle(.plain)
             }.tmCard()
         }
     }
