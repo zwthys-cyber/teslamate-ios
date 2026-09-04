@@ -12,6 +12,7 @@ struct VehicleDashboard: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
+                if session.vehicles.count > 1 { vehiclePicker }
                 header
                 if let coordinate {
                     Map(initialPosition: .region(.init(
@@ -36,6 +37,18 @@ struct VehicleDashboard: View {
             }
             .padding()
         }
+    }
+
+    @Environment(AppSession.self) private var session
+
+    private var vehiclePicker: some View {
+        Picker("车辆", selection: Binding(
+            get: { session.selectedVehicleID },
+            set: { id in Task { await session.selectVehicle(id) } }
+        )) {
+            ForEach(session.vehicles) { item in Text(item.name).tag(item.id) }
+        }
+        .pickerStyle(.segmented)
     }
 
     private var header: some View {
