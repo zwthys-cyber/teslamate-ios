@@ -48,7 +48,7 @@ private struct ChargeCard: View {
     }
 }
 
-private struct ChargingDetailView: View {
+struct ChargingDetailView: View {
     @Environment(AppSession.self) private var session
     let item: ChargingSession
     @State private var samples: [ChargingSample] = []

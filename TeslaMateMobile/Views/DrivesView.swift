@@ -51,7 +51,7 @@ private struct DriveCard: View {
     }
 }
 
-private struct DriveDetailView: View {
+struct DriveDetailView: View {
     @Environment(AppSession.self) private var session
     let drive: Drive
     @State private var positions: [DrivePosition] = []

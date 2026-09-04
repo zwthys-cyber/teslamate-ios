@@ -23,6 +23,8 @@ struct MoreView: View {
 
                     VStack(alignment: .leading, spacing: 12) {
                         TMSectionTitle("数据与地点")
+                        NavigationLink { TimelineView() } label: { MenuRow(icon: "clock.arrow.circlepath", title: "车辆时间轴", subtitle: "行程、充电与软件更新") }
+                        Divider().overlay(.white.opacity(0.1))
                         NavigationLink { GeofencesMapView(geofences: session.geofences) } label: { MenuRow(icon: "map.fill", title: "地理围栏", subtitle: "\(session.geofences.count) 个已保存地点") }
                         Divider().overlay(.white.opacity(0.1))
                         NavigationLink { SoftwareUpdatesView(updates: session.updates) } label: { MenuRow(icon: "gearshape.2", title: "软件更新历史", subtitle: "\(session.updates.count) 条车辆固件记录") }
@@ -36,7 +38,7 @@ struct MoreView: View {
                         Divider().overlay(.white.opacity(0.1))
                         MenuRow(icon: "arrow.clockwise", title: "自动同步", subtitle: "每 60 秒")
                         Divider().overlay(.white.opacity(0.1))
-                        MenuRow(icon: "info.circle", title: "TeslaMate iOS", subtitle: "版本 1.2.0 · 黑白专业版")
+                        MenuRow(icon: "info.circle", title: "TeslaMate iOS", subtitle: "版本 1.3.0 · 黑白专业版")
                     }.buttonStyle(.plain).tmCard()
 
                     if let error = session.errorMessage {
