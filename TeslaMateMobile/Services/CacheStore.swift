@@ -7,6 +7,7 @@ struct AppCache: Codable {
     let statistics: Statistics
     let geofences: [Geofence]
     let updates: [SoftwareUpdate]?
+    let batteryHealth: [BatteryHealthSample]?
     let lastUpdated: Date
 }
 

@@ -5,6 +5,7 @@ struct ChargingEnvelope: Decodable { let data: [ChargingSession] }
 struct StatisticsEnvelope: Decodable { let data: Statistics }
 struct GeofenceEnvelope: Decodable { let data: [Geofence] }
 struct SoftwareUpdateEnvelope: Decodable { let data: [SoftwareUpdate] }
+struct BatteryHealthEnvelope: Decodable { let data: [BatteryHealthSample] }
 
 struct Drive: Codable, Identifiable, Hashable {
     let id: Int
@@ -76,4 +77,11 @@ struct Geofence: Codable, Identifiable, Hashable {
 struct SoftwareUpdate: Codable, Identifiable, Hashable {
     let id: Int
     let startDate, endDate, version: String?
+}
+
+struct BatteryHealthSample: Codable, Identifiable, Hashable {
+    var id: String { date }
+    let date: String
+    let fullRangeKm, odometer: Double?
+    let samples: Int
 }

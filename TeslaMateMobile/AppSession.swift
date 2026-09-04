@@ -12,6 +12,7 @@ final class AppSession {
     var statistics = Statistics.empty
     var geofences: [Geofence] = []
     var updates: [SoftwareUpdate] = []
+    var batteryHealth: [BatteryHealthSample] = []
     var isLoading = false
     var errorMessage: String?
     var lastUpdated: Date?
@@ -28,6 +29,7 @@ final class AppSession {
         statistics = cache.statistics
         geofences = cache.geofences
         updates = cache.updates ?? []
+        batteryHealth = cache.batteryHealth ?? []
         lastUpdated = cache.lastUpdated
     }
 
@@ -56,7 +58,8 @@ final class AppSession {
                 async let newStatistics = client.statistics(carID: carID)
                 async let newGeofences = client.geofences()
                 async let newUpdates = client.updates(carID: carID)
-                (drives, chargingSessions, statistics, geofences, updates) = try await (newDrives, newCharging, newStatistics, newGeofences, newUpdates)
+                async let newBatteryHealth = client.batteryHealth(carID: carID)
+                (drives, chargingSessions, statistics, geofences, updates, batteryHealth) = try await (newDrives, newCharging, newStatistics, newGeofences, newUpdates, newBatteryHealth)
             }
             lastUpdated = Date()
             errorMessage = nil
@@ -82,7 +85,8 @@ final class AppSession {
             async let newStatistics = client.statistics(carID: carID)
             async let newGeofences = client.geofences()
             async let newUpdates = client.updates(carID: carID)
-            (drives, chargingSessions, statistics, geofences, updates) = try await (newDrives, newCharging, newStatistics, newGeofences, newUpdates)
+            async let newBatteryHealth = client.batteryHealth(carID: carID)
+            (drives, chargingSessions, statistics, geofences, updates, batteryHealth) = try await (newDrives, newCharging, newStatistics, newGeofences, newUpdates, newBatteryHealth)
             lastUpdated = Date()
             errorMessage = nil
             persistCache()
@@ -91,6 +95,6 @@ final class AppSession {
 
     private func persistCache() {
         guard let lastUpdated else { return }
-        CacheStore.save(.init(vehicles: vehicles, drives: drives, chargingSessions: chargingSessions, statistics: statistics, geofences: geofences, updates: updates, lastUpdated: lastUpdated))
+        CacheStore.save(.init(vehicles: vehicles, drives: drives, chargingSessions: chargingSessions, statistics: statistics, geofences: geofences, updates: updates, batteryHealth: batteryHealth, lastUpdated: lastUpdated))
     }
 }
