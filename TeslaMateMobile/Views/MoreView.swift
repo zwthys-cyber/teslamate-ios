@@ -84,20 +84,39 @@ private struct GeofencesMapView: View {
 
 private struct GrafanaView: View {
     let url: URL
+    @StateObject private var browser = GrafanaBrowser()
     var body: some View {
-        GrafanaWebView(url: url).ignoresSafeArea(edges: .bottom).navigationTitle("中文仪表盘").navigationBarTitleDisplayMode(.inline)
+        GrafanaWebView(browser: browser, url: url)
+            .ignoresSafeArea(edges: .bottom)
+            .navigationTitle("中文仪表盘")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItemGroup(placement: .bottomBar) {
+                    Button { browser.webView.goBack() } label: { Image(systemName: "chevron.left") }
+                    Button { browser.webView.goForward() } label: { Image(systemName: "chevron.right") }
+                    Spacer()
+                    Button { browser.webView.reload() } label: { Image(systemName: "arrow.clockwise") }
+                }
+            }
     }
 }
 
-private struct GrafanaWebView: UIViewRepresentable {
-    let url: URL
-    func makeUIView(context: Context) -> WKWebView {
+private final class GrafanaBrowser: ObservableObject {
+    let webView: WKWebView = {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .default()
         let view = WKWebView(frame: .zero, configuration: configuration)
         view.allowsBackForwardNavigationGestures = true
-        view.load(URLRequest(url: url))
         return view
+    }()
+}
+
+private struct GrafanaWebView: UIViewRepresentable {
+    let browser: GrafanaBrowser
+    let url: URL
+    func makeUIView(context: Context) -> WKWebView {
+        browser.webView.load(URLRequest(url: url))
+        return browser.webView
     }
     func updateUIView(_ uiView: WKWebView, context: Context) {}
 }

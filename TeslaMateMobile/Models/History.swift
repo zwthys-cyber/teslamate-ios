@@ -53,11 +53,15 @@ struct ChargingSample: Decodable, Identifiable {
 struct Statistics: Decodable {
     let driving: DrivingStatistics
     let charging: ChargingStatistics
-    static let empty = Statistics(driving: .init(count: 0, distanceKm: 0, durationMin: 0), charging: .init(count: 0, energyKwh: 0, cost: 0))
+    let monthlyDriving: [MonthlyDriving]
+    let monthlyCharging: [MonthlyCharging]
+    static let empty = Statistics(driving: .init(count: 0, distanceKm: 0, durationMin: 0), charging: .init(count: 0, energyKwh: 0, cost: 0), monthlyDriving: [], monthlyCharging: [])
 }
 
 struct DrivingStatistics: Decodable { let count: Int; let distanceKm: Double; let durationMin: Int }
 struct ChargingStatistics: Decodable { let count: Int; let energyKwh: Double; let cost: Double }
+struct MonthlyDriving: Decodable, Identifiable { var id: String { month }; let month: String; let count: Int; let distanceKm: Double; let durationMin: Int }
+struct MonthlyCharging: Decodable, Identifiable { var id: String { month }; let month: String; let count: Int; let energyKwh: Double; let cost: Double }
 
 struct Geofence: Decodable, Identifiable, Hashable {
     let id: Int
