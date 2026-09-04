@@ -8,6 +8,7 @@ struct TeslaMateMobileApp: App {
         WindowGroup {
             RootView()
                 .environment(session)
+                .tint(TMStyle.accent)
                 .preferredColorScheme(.dark)
         }
     }
