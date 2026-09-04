@@ -14,16 +14,26 @@ struct DrivesView: View {
         ZStack {
             TMStyle.background.ignoresSafeArea()
             ScrollView {
-                LazyVStack(spacing: 14) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 3) { Text("最近行程").font(.title2.bold()); Text("共 \(session.statistics.driving.count) 次 · \(String(format: "%.0f", session.statistics.driving.distanceKm)) km").font(.subheadline).foregroundStyle(.secondary) }
-                        Spacer(); Image(systemName: "road.lanes").font(.title2)
-                    }.tmCard()
-                    ForEach(filteredDrives) { drive in
-                        NavigationLink { DriveDetailView(drive: drive) } label: { DriveCard(drive: drive) }.buttonStyle(.plain)
+                LazyVStack(alignment: .leading, spacing: 24) {
+                    HStack(alignment: .lastTextBaseline) {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(String(format: "%.0f", session.statistics.driving.distanceKm)).font(.system(size: 44, weight: .semibold, design: .rounded)).tracking(-1.5).monospacedDigit()
+                            Text("累计公里").font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 5) { Text("\(session.statistics.driving.count)").font(.title2.weight(.semibold).monospacedDigit()); Text("全部行程").font(.caption).foregroundStyle(.secondary) }
+                    }
+                    if !filteredDrives.isEmpty {
+                        VStack(spacing: 0) {
+                            ForEach(filteredDrives.indices, id: \.self) { index in
+                                let drive = filteredDrives[index]
+                                NavigationLink { DriveDetailView(drive: drive) } label: { DriveRow(drive: drive) }.buttonStyle(.plain)
+                                if index != filteredDrives.indices.last { Divider().overlay(.white.opacity(0.1)).padding(.leading, 44) }
+                            }
+                        }.padding(.horizontal, 16).background(TMStyle.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous)).overlay { RoundedRectangle(cornerRadius: 16).stroke(TMStyle.border, lineWidth: 0.5) }
                     }
                     if filteredDrives.isEmpty { ContentUnavailableView(searchText.isEmpty ? "暂无行程" : "没有匹配行程", systemImage: "road.lanes", description: Text(searchText.isEmpty ? "完成一次驾驶后会自动出现在这里" : "尝试搜索其他地点")) .padding(.top, 80) }
-                }.padding(.horizontal, 18).padding(.bottom, 30)
+                }.padding(.horizontal, 20).padding(.bottom, 36)
             }
         }
         .navigationTitle("行程")
@@ -32,22 +42,20 @@ struct DrivesView: View {
     }
 }
 
-private struct DriveCard: View {
+private struct DriveRow: View {
     let drive: Drive
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top) {
-                Text(DateText.format(drive.startDate)).font(.caption).foregroundStyle(.secondary)
-                Spacer(); Text(String(format: "%.1f km", drive.distanceKm ?? 0)).font(.title3.bold().monospacedDigit())
+        HStack(spacing: 13) {
+            Image(systemName: "arrow.up.right").font(.caption.weight(.semibold)).frame(width: 30, height: 30).background(TMStyle.elevated, in: Circle())
+            VStack(alignment: .leading, spacing: 5) {
+                Text(drive.endName).font(.subheadline.weight(.semibold)).lineLimit(1)
+                Text("\(drive.startName) · \(drive.durationMin ?? 0) 分钟").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                Text(DateText.format(drive.startDate)).font(.caption2).foregroundStyle(.tertiary)
             }
-            HStack(spacing: 12) {
-                VStack(spacing: 3) { Circle().fill(.white).frame(width: 7, height: 7); Rectangle().fill(.white.opacity(0.25)).frame(width: 1, height: 24); Circle().stroke(.white, lineWidth: 1.5).frame(width: 7, height: 7) }
-                VStack(alignment: .leading, spacing: 15) { Text(drive.startName).lineLimit(1); Text(drive.endName).lineLimit(1) }
-                Spacer()
-            }.font(.subheadline.weight(.medium))
-            HStack { Label("\(drive.durationMin ?? 0) 分钟", systemImage: "clock"); Spacer(); Label("最高 \(drive.speedMax ?? 0) km/h", systemImage: "speedometer") }
-                .font(.caption).foregroundStyle(.secondary)
-        }.tmCard()
+            Spacer(minLength: 8)
+            VStack(alignment: .trailing, spacing: 5) { Text(String(format: "%.1f", drive.distanceKm ?? 0)).font(.headline.monospacedDigit()); Text("km").font(.caption2).foregroundStyle(.secondary) }
+            Image(systemName: "chevron.right").font(.caption2.weight(.bold)).foregroundStyle(.tertiary)
+        }.padding(.vertical, 14).contentShape(Rectangle()).accessibilityElement(children: .combine)
     }
 }
 

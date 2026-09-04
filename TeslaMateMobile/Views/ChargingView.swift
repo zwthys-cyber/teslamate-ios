@@ -13,16 +13,23 @@ struct ChargingView: View {
         ZStack {
             TMStyle.background.ignoresSafeArea()
             ScrollView {
-                LazyVStack(spacing: 14) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 3) { Text("充电历史").font(.title2.bold()); Text("累计 \(String(format: "%.1f", session.statistics.charging.energyKwh)) kWh · \(session.statistics.charging.count) 次").font(.subheadline).foregroundStyle(.secondary) }
-                        Spacer(); Image(systemName: "bolt.fill").font(.title2)
-                    }.tmCard()
-                    ForEach(filteredSessions) { item in
-                        NavigationLink { ChargingDetailView(item: item) } label: { ChargeCard(item: item) }.buttonStyle(.plain)
+                LazyVStack(alignment: .leading, spacing: 24) {
+                    HStack(alignment: .lastTextBaseline) {
+                        VStack(alignment: .leading, spacing: 5) { Text(String(format: "%.1f", session.statistics.charging.energyKwh)).font(.system(size: 44, weight: .semibold, design: .rounded)).tracking(-1.5).monospacedDigit(); Text("累计 kWh").font(.caption).foregroundStyle(.secondary) }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 5) { Text("\(session.statistics.charging.count)").font(.title2.weight(.semibold).monospacedDigit()); Text("充电记录").font(.caption).foregroundStyle(.secondary) }
+                    }
+                    if !filteredSessions.isEmpty {
+                        VStack(spacing: 0) {
+                            ForEach(filteredSessions.indices, id: \.self) { index in
+                                let item = filteredSessions[index]
+                                NavigationLink { ChargingDetailView(item: item) } label: { ChargeRow(item: item) }.buttonStyle(.plain)
+                                if index != filteredSessions.indices.last { Divider().overlay(.white.opacity(0.1)).padding(.leading, 44) }
+                            }
+                        }.padding(.horizontal, 16).background(TMStyle.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous)).overlay { RoundedRectangle(cornerRadius: 16).stroke(TMStyle.border, lineWidth: 0.5) }
                     }
                     if filteredSessions.isEmpty { ContentUnavailableView(searchText.isEmpty ? "暂无充电记录" : "没有匹配记录", systemImage: "bolt.car", description: Text(searchText.isEmpty ? "完成一次充电后会自动出现在这里" : "尝试搜索其他地点")).padding(.top, 80) }
-                }.padding(.horizontal, 18).padding(.bottom, 30)
+                }.padding(.horizontal, 20).padding(.bottom, 36)
             }
         }
         .navigationTitle("充电")
@@ -31,20 +38,20 @@ struct ChargingView: View {
     }
 }
 
-private struct ChargeCard: View {
+private struct ChargeRow: View {
     let item: ChargingSession
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack { Label(item.name, systemImage: "mappin.and.ellipse").font(.headline).lineLimit(1); Spacer(); Image(systemName: "chevron.right").font(.caption.bold()).foregroundStyle(.tertiary) }
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(String(format: "%.1f", item.energyAddedKwh ?? 0)).font(.system(.largeTitle, design: .rounded, weight: .bold)).monospacedDigit()
-                Text("kWh").foregroundStyle(.secondary); Spacer()
-                Text("\(item.startBatteryLevel ?? 0)%").foregroundStyle(.secondary); Image(systemName: "arrow.right").font(.caption); Text("\(item.endBatteryLevel ?? 0)%").font(.headline)
+        HStack(spacing: 13) {
+            Image(systemName: "bolt.fill").font(.caption.weight(.semibold)).frame(width: 30, height: 30).background(TMStyle.elevated, in: Circle())
+            VStack(alignment: .leading, spacing: 5) {
+                Text(item.name).font(.subheadline.weight(.semibold)).lineLimit(1)
+                Text("\(item.startBatteryLevel ?? 0)% → \(item.endBatteryLevel ?? 0)% · \(item.durationMin ?? 0) 分钟").font(.caption).foregroundStyle(.secondary)
+                Text(DateText.format(item.startDate)).font(.caption2).foregroundStyle(.tertiary)
             }
-            HStack { Label("\(item.durationMin ?? 0) 分钟", systemImage: "clock"); Spacer(); if let cost = item.cost { Label(String(format: "¥%.2f", cost), systemImage: "yensign.circle") } }
-                .font(.caption).foregroundStyle(.secondary)
-            Text(DateText.format(item.startDate)).font(.caption2).foregroundStyle(.tertiary)
-        }.tmCard()
+            Spacer(minLength: 8)
+            VStack(alignment: .trailing, spacing: 5) { Text(String(format: "%.1f", item.energyAddedKwh ?? 0)).font(.headline.monospacedDigit()); Text("kWh").font(.caption2).foregroundStyle(.secondary) }
+            Image(systemName: "chevron.right").font(.caption2.weight(.bold)).foregroundStyle(.tertiary)
+        }.padding(.vertical, 14).contentShape(Rectangle()).accessibilityElement(children: .combine)
     }
 }
 
